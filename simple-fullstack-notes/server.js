@@ -15,7 +15,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // In-memory "database"
 let notes = [
-  { id: 1, text: "Hello! This is your first note." }
+  {
+    id: 1,
+    text: "Hello! This is your first note.",
+    createdAt: new Date().toISOString()
+  }
 ];
 let nextId = 2;
 
@@ -28,9 +32,20 @@ app.post("/api/notes", (req, res) => {
   const text = (req.body?.text ?? "").trim();
   if (!text) return res.status(400).json({ error: "text is required" });
 
-  const newNote = { id: nextId++, text };
+  const newNote = {
+    id: nextId++,
+    text,
+    createdAt: new Date().toISOString()
+  };
+
   notes.unshift(newNote);
   res.status(201).json(newNote);
+});
+
+app.delete("/api/notes", (req, res) => {
+  notes = [];
+  nextId = 1;
+  res.json({ ok: true });
 });
 
 // Start server

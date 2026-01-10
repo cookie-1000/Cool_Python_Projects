@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+  
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,17 +19,28 @@
   </head>
   <body>
     <h1>Notes</h1>
-    <div class="muted">Frontend (HTML) + Backend (Express API)</div>
+    
+    <p class="muted">
+  A tiny full-stack app built with Express (backend) and vanilla HTML/JS (frontend).
+    </p>
+    
 
     <form id="noteForm">
       <input id="noteInput" placeholder="Type a note..." />
       <button type="submit">Add</button>
+      <button type="button" id="clearBtn">Clear All</button>
     </form>
+    
 
     <div id="error" class="error"></div>
     <ul id="notesList"></ul>
 
     <script>
+      document.getElementById("clearBtn").onclick = async () => {
+  await fetch("/api/notes", { method: "DELETE" });
+  fetchNotes();
+};
+
       const notesList = document.getElementById("notesList");
       const noteForm = document.getElementById("noteForm");
       const noteInput = document.getElementById("noteInput");
@@ -48,10 +60,12 @@
         notesList.innerHTML = "";
         for (const n of notes) {
           const li = document.createElement("li");
-          li.textContent = n.text;
+          const time = new Date(n.createdAt).toLocaleTimeString();
+          li.textContent = `[${time}] ${n.text}`;
           notesList.appendChild(li);
         }
       }
+
 
       noteForm.addEventListener("submit", async (e) => {
         e.preventDefault();
