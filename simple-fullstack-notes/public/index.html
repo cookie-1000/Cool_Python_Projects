@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Full-Stack Notes</title>
+    <style>
+      body { font-family: system-ui, Arial; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+      h1 { margin-bottom: 8px; }
+      form { display: flex; gap: 8px; margin: 16px 0; }
+      input { flex: 1; padding: 10px; font-size: 16px; }
+      button { padding: 10px 14px; font-size: 16px; cursor: pointer; }
+      ul { padding-left: 18px; }
+      li { margin: 8px 0; }
+      .muted { color: #666; font-size: 14px; }
+      .error { color: #b00020; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Notes</h1>
+    <div class="muted">Frontend (HTML) + Backend (Express API)</div>
+
+    <form id="noteForm">
+      <input id="noteInput" placeholder="Type a note..." />
+      <button type="submit">Add</button>
+    </form>
+
+    <div id="error" class="error"></div>
+    <ul id="notesList"></ul>
+
+    <script>
+      const notesList = document.getElementById("notesList");
+      const noteForm = document.getElementById("noteForm");
+      const noteInput = document.getElementById("noteInput");
+      const errorBox = document.getElementById("error");
+
+      function setError(msg) {
+        errorBox.textContent = msg || "";
+      }
+
+      async function fetchNotes() {
+        const res = await fetch("/api/notes");
+        const data = await res.json();
+        renderNotes(data);
+      }
+
+      function renderNotes(notes) {
+        notesList.innerHTML = "";
+        for (const n of notes) {
+          const li = document.createElement("li");
+          li.textContent = n.text;
+          notesList.appendChild(li);
+        }
+      }
+
+      noteForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setError("");
+
+        const text = noteInput.value.trim();
+        if (!text) return setError("Please type something.");
+
+        const res = await fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          return setError(err.error || "Something went wrong.");
+        }
+
+        noteInput.value = "";
+        await fetchNotes();
+      });
+
+      fetchNotes();
+    </script>
+  </body>
+</html>
